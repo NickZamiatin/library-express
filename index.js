@@ -52,7 +52,44 @@ app.get('/books/:id', (request, response) => {
 app.post('/books', (request, response) => {});
 
 // update
-app.put('/books/:id', (request, response) => {});
+app.put('/books/:id', (request, response) => {
+  // Read JSON file
+  fs.readFile(booksPath, 'utf-8', (readError, booksJSON) => {
+    // Error handling
+    if (readError) {
+      console.error(readError);
+      return response.sendStatus(500);
+    }
+    // Parse JSON file and store in array
+    const books = JSON.parse(booksJSON);
+    const newBook = {
+      ISBN: request.body.ISBN,
+      title: request.body.title,
+      author: request.body.author,
+      price: parseFloat(request.body.price)
+    };
+    // Find the array item that matches :id, store the item, and update the array.
+    const updatedBooks = books.map( book => {
+      if (book.ISBN === request.params.id) {
+        return newBook;
+      } else {
+        return book;
+      }
+    });
+    // Convert the array to JSON (stringify)
+    const updatedBooksJSON = JSON.stringify(updatedBooks);
+    // Write the JSON back to the file
+    fs.writeFile(booksPath, updatedBooksJSON, (writeError) => {
+      // Error handling
+      if (writeError) {
+        console.error(writeError);
+        return response.sendStatus(500);
+      }
+      // Respond with stored item.
+      response.send(newBook);
+    });
+  });
+});
 
 // destroy
 app.delete('/books/:id', (request, response) => {});
