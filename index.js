@@ -53,6 +53,7 @@ app.post('/books', (request, response) => {});
 
 // update
 app.put('/books/:id', (request, response) => {
+  let newBook;
   // Read JSON file
   fs.readFile(booksPath, 'utf-8', (readError, booksJSON) => {
     // Error handling
@@ -62,15 +63,15 @@ app.put('/books/:id', (request, response) => {
     }
     // Parse JSON file and store in array
     const books = JSON.parse(booksJSON);
-    const newBook = {
-      ISBN: request.body.ISBN,
-      title: request.body.title,
-      author: request.body.author,
-      price: parseFloat(request.body.price)
-    };
     // Find the array item that matches :id, store the item, and update the array.
     const updatedBooks = books.map( book => {
       if (book.ISBN === request.params.id) {
+        newBook = {
+          ISBN: book.ISBN,
+          title: request.body.title || book.title,
+          author: request.body.author || book.author,
+          price: parseFloat(request.body.price) || book.price
+        };
         return newBook;
       } else {
         return book;
