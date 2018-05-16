@@ -49,7 +49,38 @@ app.get('/books/:id', (request, response) => {
 });
 
 // create
-app.post('/books', (request, response) => {});
+app.post('/books', (request, response) => {
+  // Read JSON file
+  fs.readFile(booksPath, 'utf-8', (readError, booksJSON) => {
+    // Error handling
+    if (readError) {
+      console.error(readError);
+      return response.sendStatus(500);
+    }
+    // Parse JSON file and store in an array
+    const books = JSON.parse(booksJSON);
+    // Push new data as book object into array
+    const newBook = {
+      ISBN: request.body.ISBN,
+      title: request.body.title,
+      author: request.body.author,
+      price: parseFloat(request.body.price)
+    };
+    books.push( newBook );
+    // Stringify updated array to json
+    updatedBooksJSON = JSON.stringify(books);
+    // Write JSON back to the file
+    fs.writeFile(booksPath, updatedBooksJSON, (writeError) => {
+      // Error handling
+      if (writeError) {
+        console.error(writeError);
+        return response.sendStatus(500);
+      }
+      // Respond with new data (book object)
+      response.send( newBook );
+    });
+  });
+});
 
 // update
 app.put('/books/:id', (request, response) => {
