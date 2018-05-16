@@ -124,7 +124,40 @@ app.put('/books/:id', (request, response) => {
 });
 
 // destroy
-app.delete('/books/:id', (request, response) => {});
+app.delete('/books/:id', (request, response) => {
+  let matchingBook;
+  // Read JSON file
+  fs.readFile(booksPath, 'utf-8', (readError, booksJSON) => {
+    // Error handling
+    if (readError) {
+      console.error(readError);
+      return response.sendStatus(500);
+    }
+    // parse JSON file and store into an array
+    const books = JSON.parse(booksJSON);
+    // Remove item from array that matches :id, store it in an object
+    const remainingBooks = books.filter( book => {
+      if ( book.ISBN === request.params.id ) {
+        matchingBook = book;
+        return false;
+      } else {
+        return true;
+      }
+    });
+    // Convert smaller array to JSON (stringify)
+    const remainingBooksJSON = JSON.stringify(remainingBooks);
+    // Write JSON back to file
+    fs.writeFile(booksPath, remainingBooksJSON, (writeError) => {
+      // Error handling
+      if (writeError) {
+        console.error(writeError);
+        return response.sendStatus(500);
+      }
+      // Respond with stored, deleted object
+      response.send(matchingBook);
+    });
+  });
+});
 
 app.listen( PORT, () => {
   console.log(`library-express: Application listening on port no. ${PORT}...`);
