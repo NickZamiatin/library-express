@@ -30,7 +30,23 @@ app.get('/books', (request, response) => {
 });
 
 // show
-app.get('/books/:id', (request, response) => {});
+app.get('/books/:id', (request, response) => {
+  // Read JSON file
+  fs.readFile(booksPath, 'utf-8', (error, booksJSON) => {
+    // Error handling
+    if (error) {
+      console.error(error);
+      return response.sendStatus(500);
+    }
+    // Parse the JSON file and store into array
+    const books = JSON.parse(booksJSON);
+    // Find the array item (book object) that matches :id, and store it.
+    // In other words find book.ISBN === request.params.id
+    const matchingBook = books.find( book => book.ISBN === request.params.id );
+    // Respond with that item
+    response.send(matchingBook);
+  });
+});
 
 // create
 app.post('/books', (request, response) => {});
